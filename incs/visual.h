@@ -19,6 +19,12 @@
 # include <stdlib.h>
 
 # define COLOR_GRAY 125
+# define PAUSE_BUTTON 32
+# define SPEED_UP 259
+# define SPEED_DOWN 258
+# define MAX_SPEED 1000000
+# define MIN_SPEED 10000
+# define RUN 114
 
 typedef struct		s_cur
 {
@@ -33,6 +39,7 @@ typedef struct		s_cur
 
 t_cur				*ncur;
 int					**g_arena_coord;
+int					button;
 
 void				init_ncurses(void);
 void				print_battle_field(void);
@@ -40,5 +47,7 @@ void				init_colors(void);
 void				print_score_board(void);
 void				print_players(void);
 void				print_cursor(void);
+int					key_hook(void);
+void				end_vizo(void);
 
 #endif

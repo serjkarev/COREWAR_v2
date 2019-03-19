@@ -13,6 +13,45 @@
 #include "visual.h"
 #include "vm.h"
 
+int		key_hook(void)
+{
+	int		c;
+
+	while (1)
+	{
+		c = getch();
+		mvwprintw(ncur->score, 38, 2, "key %d ", c);
+		wrefresh(ncur->score);
+		wattron(ncur->score, A_BOLD);
+		mvwprintw(ncur->score, 4, 3, "Cycles/second limit : %d ", ncur->sec_lim/1000);
+		wrefresh(ncur->score);
+		wattroff(ncur->score, A_BOLD);
+		if (c == PAUSE_BUTTON && ncur->pause)
+			ncur->pause = false;
+		else if (c == PAUSE_BUTTON && !ncur->pause)
+			ncur->pause = true;
+		else if (c == SPEED_UP && ncur->sec_lim < MAX_SPEED)
+			ncur->sec_lim += 10000;
+		else if (c == SPEED_DOWN && ncur->sec_lim > MIN_SPEED)
+			ncur->sec_lim -= 10000;
+		if (ncur->pause)
+			continue ;
+		else
+			break ;
+	}
+	return (c);
+}
+
+void		end_vizo(void)
+{
+	wclear(ncur->field);
+	wclear(ncur->score);
+	clear();
+	echo();
+	curs_set(1);
+	endwin();
+}
+
 void		print_cursor(void)
 {
 	int		i;
@@ -75,7 +114,7 @@ void		print_score_board(void)
 {
 	wattron(ncur->score, A_BOLD);
 	// mvwprintw(ncur->score, 2, 14, "** PAUSED **");
-	mvwprintw(ncur->score, 4, 3, "Cycles/second limit : %d", ncur->sec_lim);
+	mvwprintw(ncur->score, 4, 3, "Cycles/second limit : %d ", ncur->sec_lim/1000);
 	//рег скорости добавить потом где то я ебу где)
 	mvwprintw(ncur->score, 7, 3, "Cycle : %d", g_current_cyrcle);
 	mvwprintw(ncur->score, 9, 3, "Processes : %d", ncur->n_c);//колво кареток а не игроков
@@ -182,117 +221,22 @@ void		init_coord(void)
 void		init_ncurses(void)
 {
 	initscr();
-	raw();
 	noecho();
-	cbreak();
+	curs_set(0);
 	keypad(stdscr, TRUE);
+	nodelay(stdscr, TRUE);
+	cbreak();
 	init_colors();
-	if (!has_colors())
-	{
-		printw("Terminal doesnt support colors");
-		getch();
-		exit(-1);//вывод ошибки нужно запилить или типо того
-	}
 	ncur = (t_cur*)malloc(sizeof(t_cur));
 	init_coord();
 	ncur->field = newwin(66, 195, 0, 0);
 	ncur->score = newwin(66, 59, 0, 195);
-	ncur->sec_lim = 10;
+	ncur->sec_lim = 50000;
 	ncur->n_p = count_players();
-	ncur->pause = TRUE;
+	ncur->pause = true;
 	box(ncur->field, 0, 0);
 	box(ncur->score, 0, 0);
 	refresh();
 	wrefresh(ncur->field);
 	wrefresh(ncur->score);
 }
-
-// int		main(int ac, char **av)
-// {
-// 	init_ncurses();
-// 	print_battle_field();
-// 	print_score_board();
-// 	// int	i = 1;
-// 	// start_color();
-// 	// init_pair(1, COLOR_CYAN, COLOR_BLACK);
-// 	// wattron(ncur->field, COLOR_PAIR(1));
-// 	// while (i + 1 < 68)
-// 	// {
-// 	// 	mvwprintw(ncur->field, i, 2, \
-// 	// 	"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
-// 	// 	i++;
-// 	// }
-// 	// wattroff(ncur->field, COLOR_PAIR(1));
-// 	// mvwprintw(ncur->field, 1, 2, "this is field");
-// 	wrefresh(ncur->field);
-// 	wrefresh(ncur->score);
-// 	getch();
-// 	endwin();
-	
-// 	return (0);
-// }
-
-// int		main(int ac, char **av)
-// {
-// 	int 	ch;
-
-// 	setlocale(LC_ALL, "");
-// 	initscr();
-// 	raw();
-// 	noecho();
-// 	cbreak();
-// 	keypad(stdscr, TRUE);
-
-// 	// printw("Type any key !!!\n");
-// 	// ch = getch();
-// 	// if (ch == KEY_F(1))
-// 	// 	printw("F1 key_pressed\n");
-// 	// else
-// 	// {
-// 	// 	printw("Key is :\n");
-// 	// 	attron(A_BOLD);
-// 	// 	printw("%c\n", ch);
-// 	// 	attroff(A_BOLD);
-// 	// }
-// 	// mvprintw(10, 10, "Hello World !!!");
-	
-// 	char mesg[]="Just a string";
-//  int row,col;
-// /* ncurses.h includes stdio.h */
-// /* message to be appeared on the screen */
-// /* to store the number of rows and *
-//  * the number of colums of the screen */
-// /* start the curses mode */
-// /* get the number of rows and columns */
-// initscr();
-// getmaxyx(stdscr,row,col);
-// mvprintw(row/2,(col-strlen(mesg))/2,"%s",mesg);
-//                                         /* print the message at the center of the screen */
-//  mvprintw(row-2,0,"This screen has %d rows and %d columns\n",row,col);
-//  printw("Try resizing your window(if possible) and then run this program again");
-
-// 	refresh();
-// 	getch();
-// 	endwin();
-// 	return (0);
-// }
-
-// int main() {
-//  char mesg[]="Enter a string: ";
-//  char str[80];
-//  int row,col;
-// /* ncurses.h includes stdio.h */
-//         /* message to be appeared on the screen */
-// /* to store the number of rows and *
-//  * the number of colums of the screen */
-// initscr();
-// getmaxyx(stdscr,row,col);
-// mvprintw(row/2,(col-strlen(mesg))/2,"%s",mesg);
-// /* start the curses mode */
-// /* get the number of rows and columns */
-//                                 /* print the message at the center of the screen */
-//  getstr(str);
-//  mvprintw(LINES - 2, 0, "You Entered: %s", str);
-//  getch();
-//  endwin();
-// return 0; }

@@ -76,9 +76,9 @@ static t_list	*kill_cursors(void)
 void		one_check(void)
 {
 	int		rounds;
+	int 	button = 0;
 
-	// int ch;
-	getch();
+	// getch();
 	rounds = -1;
 	g_live_per_cyrcle = 0;
 	while (++rounds < ((g_cycles_to_die > 0) ? g_cycles_to_die : 1)
@@ -88,10 +88,23 @@ void		one_check(void)
         if (g_vflag & 0x02)
             ft_printf("It is now cycle %d\n", g_current_cyrcle);
 		ft_lstiter(g_all_cursor, run_one_cursor);
-
-		print_battle_field();
-		print_cursor();
-		print_score_board();
+		if (g_vizo)
+		{
+			// if (button == RUN)
+				// continue ;
+			// button = key_hook();
+			// usleep(ncur->sec_lim/10 * 1000 * 1000);
+			button = key_hook();
+			mvwprintw(ncur->score, 39, 2, "button %d ", button);
+			wrefresh(ncur->score);
+		
+			print_battle_field();
+			print_cursor();
+			print_score_board();
+			usleep(1000000 - ncur->sec_lim);
+			
+			// getch();
+		}
 		// getch();
 		//viso
 	}
@@ -112,14 +125,10 @@ void		one_check(void)
 
 void		buttle(void)
 {
-	int		ch = 0;
+	// getch();
 	while (ft_lstlen(g_all_cursor) > 0 && (g_dump == DUMP || g_current_cyrcle < g_dump))
 	{
-		// ch = getch();
-		// if (ch == 49)
-		// 	(ncur->pause == TRUE) ? (ncur->pause = FALSE) : (ncur->pause = TRUE);
-		// if (ncur->pause == FALSE)
-		// 	continue ; 
+		
 	    one_check();
 	}
 	if (g_current_cyrcle == g_dump)

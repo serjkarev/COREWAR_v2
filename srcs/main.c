@@ -26,12 +26,11 @@ int main(int argc, char **argv)
 			print_battle_field();
 			print_cursor();
 			print_score_board();
-			// getch();
 		}
 		buttle();
 	}
 	main_free();
 	if (g_vizo == 1)
-		endwin();
+		end_vizo();
 	return (0);
 }
