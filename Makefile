@@ -1,39 +1,66 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: kmerkulo <marvin@42.fr>                    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2019/03/19 18:54:02 by kmerkulo          #+#    #+#              #
+#    Updated: 2019/03/19 18:54:04 by kmerkulo         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
-FLAGS := -Werror #-Wextra -Wall
-NAME := corewar
+NAME = 		corewar
 
-INC_DIR := -I ./incs/
-INC_DIR_LIB := -I ./libft/
+CC = 			clang
+CFLAGS = 		-Werror -Wextra -Wall
+LIB_DIR =		libft/
+LIBC =			libft.a
 
-SRC_DIR := ./srcs/
-OBJ_DIR := ./objs/
+INC_DIR := 		inc/
+INC_DIR_LIB := 	-I ./libft/
 
-LIB_M := ./libft/Makefile
+SRC_DIR = 		src/
+OBJ_DIR = 		obj/
 
-SRC := error.c init.c read_bytecode.c read_file.c main.c buttle.c print.c free.c \
-		ops.c oops.c ooops.c aff.c ops_fun.c visual.c
+SRC = 			error.c init.c read_bytecode.c read_file.c main.c battle.c print.c free.c \
+				ops.c oops.c ooops.c aff.c ops_fun.c visual.c
 
-OBJ := $(addprefix $(OBJ_DIR), $(SRC:.c=.o))
+OBJ = 			$(addprefix $(OBJ_DIR), $(SRC:.c=.o))
 
-all: lib $(NAME)
+.PHONY: 		all
 
-$(NAME): $(OBJ)
-	gcc  -o $(NAME) $(OBJ) -l ncurses -L. -lft
+all: 			$(NAME)
+	@:
 
-lib:
-	make -f $(LIB_M)
+$(LIBC):
+	@$(MAKE) -C libft
 
-$(OBJ_DIR)%.o: %.c
-	gcc -c $(FLAGS)  $< -o $@  $(INC_DIR) $(INC_DIR_LIB)
+$(NAME): 		$(LIBC) $(OBJ)
+	@$(CC)  -o $(NAME) $(OBJ) -l ncurses -L$(LIB_DIR) -lft
+	@echo "\033[34mCorewar compiled!\033[0m"
+
+$(OBJ):			| $(OBJ_DIR)
+
+$(OBJ_DIR):
+	@mkdir $(OBJ_DIR)
+
+$(OBJ_DIR)%.o: 	$(SRC_DIR)%.c $(INC_DIR)*.h
+	@echo "\033[33mCompiling $<...\033[0m"
+	@$(CC) -c $(CFLAGS) $< -o $@ -I $(INC_DIR) $(INC_DIR_LIB)
 
 clean:
-	@rm -f $(OBJ)
-	make -f $(LIB_M) clean
+	@rm -rf $(OBJ_DIR)
+	@$(MAKE) clean -C libft
+	@echo "\033[32mCleaned!\033[0m"
+
 fclean: clean
 	@rm -f $(NAME)
-	make -f $(LIB_M) fclean
+	@$(MAKE) fclean -C libft
+
 clean_all: clean
 	@rm -f *~
+
 re: fclean all
 
 vpath %.c $(SRC_DIR)
