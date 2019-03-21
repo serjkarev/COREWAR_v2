@@ -57,7 +57,7 @@ void	print_status(void)
 	wrefresh(ncur->score);
 }
 
-int		key_hook(void)
+void		key_hook(void)
 {
 	int		c;
 
@@ -66,30 +66,64 @@ int		key_hook(void)
 		c = getch();
 		print_status();
 		print_speed();
-		mvwprintw(ncur->score, 38, 2, "%d", c);
-		wrefresh(ncur->score);
-		if (c == PAUSE_BUTTON && ncur->pause)
-			ncur->pause = false;
-		else if (c == PAUSE_BUTTON && !ncur->pause)
-			ncur->pause = true;
-		else if (c == SPEED_UP && ncur->sec_lim < MAX_SPEED)
-			ncur->sec_lim += 100000;
-		else if (c == SPEED_DOWN && ncur->sec_lim > MIN_SPEED)
-			ncur->sec_lim -= 100000;
-		else if (c == KEY_RIGHT)
+		key_hook_2(c);
+		if (c == KEY_RIGHT)
 			break ;
 		if (ncur->pause)
 			continue ;
 		else
 			break ;
 	}
-	return (c);
+}
+
+void		key_hook_2(int c)
+{
+	if (c == PAUSE_BUTTON && ncur->pause)
+		ncur->pause = false;
+	else if (c == PAUSE_BUTTON && !ncur->pause)
+		ncur->pause = true;
+	else if (c == SPEED_UP && ncur->sec_lim < MAX_SPEED)
+		ncur->sec_lim += 100000;
+	else if (c == SPEED_DOWN && ncur->sec_lim > MIN_SPEED)
+		ncur->sec_lim -= 100000;
+	else if (c == MUSIC && !ncur->music)
+	{
+		system("afplay ./sound/music.mp3&");
+		ncur->music = true;
+	}
+	else if (c == MUSIC && ncur->music)
+	{
+		system("killall afplay");
+		ncur->music = false;
+	}
+}
+
+void		print_winner(void)
+{
+	wattron(ncur->score, A_BOLD);
+	mvwprintw(ncur->score, 46, 3, "Player %d", g_last_player->header->magic);
+	wattron(ncur->score, COLOR_PAIR(g_last_player->header->magic));
+	mvwprintw(ncur->score, 40, 8, "                                _____ ____");
+	mvwprintw(ncur->score, 41, 8, " \\          / || |\\   | |\\   | |      |   |");
+	mvwprintw(ncur->score, 42, 8, "  \\        /  || | \\  | | \\  | |____  |__/ ");
+	mvwprintw(ncur->score, 43, 8, "   \\  /\\  /   || |  \\ | |  \\ | |      |  \\");
+	mvwprintw(ncur->score, 44, 8, "    \\/  \\/    || |   \\| |   \\| |_____ |   \\");
+	mvwprintw(ncur->score, 47, 3, "%s", g_last_player->header->prog_name);
+	wattroff(ncur->score, A_BOLD);
+	wattroff(ncur->score, COLOR_PAIR(g_last_player->header->magic));
+	if (ncur->music)
+		system("killall afplay");
+	wrefresh(ncur->score);
 }
 
 void		end_vizo(void)
 {
+	print_winner();
+	while (getch() != 27)
+		;
 	wclear(ncur->field);
 	wclear(ncur->score);
+	//free array
 	clear();
 	echo();
 	curs_set(1);
@@ -109,6 +143,8 @@ void		print_cursor(void)
 		i = ((t_cursor*)head->content)->place;
 		if (g_arena[i] == 1)
 		{
+			if (g_arena_coord[2][i] == 0)
+				g_arena_coord[2][i] = 50;
 			wattron(ncur->field, A_BOLD);
 			wattron(ncur->field, COLOR_PAIR(g_arena_color[i] + 100));
 			mvwprintw(ncur->field, g_arena_coord[0][i], g_arena_coord[1][i], "%.2x", g_arena[i]);
@@ -123,6 +159,27 @@ void		print_cursor(void)
 		}
 		ncur->n_c += 1;
 		head = head->next;
+	}
+	wrefresh(ncur->field);
+}
+
+void		print_live(void)
+{
+	int		i;
+
+	i = 0;
+	while (i < MEM_SIZE)
+	{
+		if (g_arena_coord[2][i] > 0)
+		{
+			wattron(ncur->field, A_BOLD);
+			wattron(ncur->field, COLOR_PAIR(g_arena_color[i] + 100));
+			mvwprintw(ncur->field, g_arena_coord[0][i], g_arena_coord[1][i], "%.2x", g_arena[i]);
+			wattroff(ncur->field, COLOR_PAIR(g_arena_color[i] + 100));
+			wattroff(ncur->field, A_BOLD);
+			g_arena_coord[2][i] -= 1;
+		}
+		i++;
 	}
 	wrefresh(ncur->field);
 }
@@ -148,8 +205,8 @@ void		print_players(void)
 		wattron(ncur->score, COLOR_PAIR(i));
 		mvwprintw(ncur->score, getcury(ncur->score), 16, "%s", g_array_players[i-1]->header->prog_name);
 		wattroff(ncur->score, COLOR_PAIR(i));
-		mvwprintw(ncur->score, getcury(ncur->score) + 1, 5, "Last live :                 %d  ", g_array_players[i-1]->last_live);
-		mvwprintw(ncur->score, getcury(ncur->score) + 1, 5, "Lives in last period :      %d  ", g_array_players[i-1]->live_per_period);
+		mvwprintw(ncur->score, getcury(ncur->score) + 1, 5, "Last live :                 %d    ", g_array_players[i-1]->last_live);
+		mvwprintw(ncur->score, getcury(ncur->score) + 1, 5, "Lives in last period :      %d    ", g_array_players[i-1]->live_per_period);
 		i++;
 	}
 }
@@ -208,6 +265,11 @@ void		print_battle_field(void)
 				wattron(ncur->field, COLOR_PAIR(5));
 				wattron(ncur->field, A_BOLD);
 			}
+			else if (g_arena_time[i])
+			{
+				wattron(ncur->field, COLOR_PAIR(g_arena_color[i]));
+				wattron(ncur->field, A_BOLD);
+			}
 			else
 				wattron(ncur->field, COLOR_PAIR(g_arena_color[i]));
 			mvwprintw(ncur->field, y, getcurx(ncur->field), "%.2x ", g_arena[i]);
@@ -215,6 +277,12 @@ void		print_battle_field(void)
 			{
 				wattroff(ncur->field, COLOR_PAIR(5));
 				wattroff(ncur->field, A_BOLD);
+			}
+			else if (g_arena_time[i])
+			{
+				wattroff(ncur->field, COLOR_PAIR(g_arena_color[i]));
+				wattroff(ncur->field, A_BOLD);
+				g_arena_time[i] -= 1;
 			}
 			else
 				wattroff(ncur->field, COLOR_PAIR(g_arena_color[i]));
@@ -236,11 +304,9 @@ void		init_coord(void)
 	int		y;
 
 	i = 0;
-	g_arena_coord = (int**)malloc(sizeof(int*) * 2);
-	while (i < 2)
-	{
+	g_arena_coord = (int**)malloc(sizeof(int*) * 3);
+	while (i < 3)
 		g_arena_coord[i++] = (int*)malloc(sizeof(int) * MEM_SIZE);
-	}
 	i = 0;
 	x = 2;
 	y = 1;
@@ -255,6 +321,7 @@ void		init_coord(void)
 		}
 		g_arena_coord[0][i] = y;
 		g_arena_coord[1][i] = x;
+		g_arena_coord[2][i] = 0;
 		x += 3;
 		i++;
 	}
@@ -276,6 +343,7 @@ void		init_ncurses(void)
 	ncur->sec_lim = 900000;
 	ncur->n_p = count_players();
 	ncur->pause = true;
+	ncur->music = false;
 	box(ncur->field, 0, 0);
 	box(ncur->score, 0, 0);
 	refresh();

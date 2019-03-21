@@ -20,6 +20,7 @@
 # define PAUSE_BUTTON 32
 # define SPEED_UP 259
 # define SPEED_DOWN 258
+# define MUSIC 109
 # define MAX_SPEED 1000000
 # define MIN_SPEED 500000
 # define RUN 114
@@ -32,12 +33,12 @@ typedef struct		s_cur
 	int				n_p;
 	int				n_c;
 	bool			pause;
+	bool			music;
 
 }					t_cur;
 
-t_cur				*ncur;
+t_cur				*ncur;//g_
 int					**g_arena_coord;
-int					button;
 
 void				init_ncurses(void);
 void				print_battle_field(void);
@@ -45,9 +46,12 @@ void				init_colors(void);
 void				print_score_board(void);
 void				print_players(void);
 void				print_cursor(void);
+void				print_live(void);
 void				print_status(void);
 void				print_speed(void);
-int					key_hook(void);
+void				key_hook(void);
+void				key_hook_2(int c);
+void				print_winner(void);
 void				end_vizo(void);
 
 #endif

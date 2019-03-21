@@ -87,9 +87,10 @@ void			one_check(void)
 		if (g_vizo)
 		{
 	
-			button = key_hook();
+			key_hook();
 			print_battle_field();
 			print_cursor();
+			print_live();
 			print_score_board();
 			usleep(1000000 - ncur->sec_lim);			
 		}
@@ -114,6 +115,8 @@ void			buttle(void)
 	while (ft_lstlen(g_all_cursor) > 0 &&
 			(g_dump == DUMP || g_current_cyrcle < g_dump))
 		one_check();
+	if (g_vizo == 1)
+		end_vizo();
 	if (ft_lstlen(g_all_cursor) == 0 && g_last_player != NULL)
 		ft_printf("Contestant %d, \"%s\", has won !\n",
 		g_last_player->header->magic, g_last_player->header->prog_name);

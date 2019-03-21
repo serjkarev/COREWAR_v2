@@ -29,7 +29,5 @@ int		main(int argc, char **argv)
 		buttle();
 	}
 	main_free();
-	if (g_vizo == 1)
-		end_vizo();
 	return (0);
 }
