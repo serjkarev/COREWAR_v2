@@ -84,16 +84,8 @@ void			one_check(void)
 		if (g_vflag & 0x02)
 			ft_printf("It is now cycle %d\n", g_current_cyrcle);
 		ft_lstiter(g_all_cursor, run_one_cursor);
-		if (g_vizo)
-		{
-	
-			key_hook();
-			print_battle_field();
-			print_cursor();
-			print_live();
-			print_score_board();
-			usleep(1000000 - ncur->sec_lim);			
-		}
+		if (g_vizo)//add
+			draw();//add
 	}
 	g_all_cursor = kill_cursors();
 	if (g_current_cyrcle == g_dump)
@@ -115,8 +107,8 @@ void			buttle(void)
 	while (ft_lstlen(g_all_cursor) > 0 &&
 			(g_dump == DUMP || g_current_cyrcle < g_dump))
 		one_check();
-	if (g_vizo == 1)
-		end_vizo();
+	if (g_vizo == 1)//add
+		end_vizo();//add
 	if (ft_lstlen(g_all_cursor) == 0 && g_last_player != NULL)
 		ft_printf("Contestant %d, \"%s\", has won !\n",
 		g_last_player->header->magic, g_last_player->header->prog_name);
